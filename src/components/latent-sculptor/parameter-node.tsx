@@ -97,7 +97,7 @@ export function ParameterNode({
   influence,
 }: ParameterNodeProps) {
   
-  const showInfluence = !['pixel-noise', 'pixel-brightness', 'pixel-color', 'setting-diffusion'].includes(node.type);
+  const showInfluence = !['pixel-noise', 'pixel-brightness', 'pixel-color', 'setting-diffusion', 'canny-edge'].includes(node.type);
 
   const renderNodeContent = () => {
     switch (node.type) {
@@ -115,6 +115,7 @@ export function ParameterNode({
       case 'pixel-noise':
       case 'pixel-brightness':
       case 'setting-diffusion':
+      case 'canny-edge':
         return (
           <div className="flex items-center gap-4">
             <Slider

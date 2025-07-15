@@ -30,7 +30,7 @@ export type ImageGenerationInput = z.infer<typeof ImageGenerationInputSchema>;
 
 const ImageGenerationOutputSchema = z.object({
   inputImage: z.string().describe("The input image as a data URI. This could be a camera capture or a generated noise pattern. Expected format: 'data:image/png;base64,<encoded_data>'.").optional(),
-  pixelManipulationsImage: z.string().describe("An image representing the pixel manipulations stage. Expected format: 'data:image/png;base64,<encoded_data>'.").optional(),
+  manipulatedImage: z.string().describe("An image representing the pixel manipulations stage. Expected format: 'data:image/png;base64,<encoded_data>'.").optional(),
   generativeModelInputImage: z.string().describe("An image representing the input to the generative model. Expected format: 'data:image/png;base64,<encoded_data>'.").optional(),
   finalImage: z.string().describe("The final generated image as a data URI. Expected format: 'data:image/png;base64,<encoded_data>'.").optional(),
 });
@@ -78,29 +78,34 @@ const imageGenerationFlow = ai.defineFlow(
         }
     }
 
-    if (step === 2) { // Apply Pixel Manipulations
-        const pixelNodes = nodes.filter(n => ['pixel-noise', 'pixel-brightness', 'pixel-color'].includes(n.type));
-        let pixelPromptParts: string[] = ["Apply the following manipulations to the image:"];
-        if (pixelNodes.length > 0) {
-            pixelNodes.forEach(node => {
+    if (step === 2) { // Apply Manipulations
+        const manipulationNodes = nodes.filter(n => ['pixel-noise', 'pixel-brightness', 'pixel-color', 'canny-edge'].includes(n.type));
+        let manipulationPromptParts: string[] = ["Apply the following manipulations to the image:"];
+        
+        if (manipulationNodes.length > 0) {
+            manipulationNodes.forEach(node => {
                 switch (node.type) {
                     case 'pixel-noise':
-                        pixelPromptParts.push(`apply ${node.value}% pixel noise.`);
+                        manipulationPromptParts.push(`apply ${node.value}% pixel noise.`);
                         break;
                     case 'pixel-brightness':
-                        pixelPromptParts.push(`adjust brightness by ${node.value}%.`);
+                        manipulationPromptParts.push(`adjust brightness by ${node.value}%.`);
                         break;
                     case 'pixel-color':
-                        pixelPromptParts.push(`add a color tint of (${node.value.r}, ${node.value.g}, ${node.value.b}).`);
+                        manipulationPromptParts.push(`add a color tint of (${node.value.r}, ${node.value.g}, ${node.value.b}).`);
+                        break;
+                    case 'canny-edge':
+                        manipulationPromptParts.push(`apply Canny edge detection with a threshold of ${node.value}.`);
                         break;
                 }
             });
         } else {
-            pixelPromptParts.push("no manipulations, return the original image.");
+            manipulationPromptParts.push("no manipulations, return the original image.");
         }
-        const pixelManipulationsImage = await generateImageWithPrompt(pixelPromptParts.join(' '), newResult.inputImage);
-        newResult.pixelManipulationsImage = pixelManipulationsImage;
-        newResult.generativeModelInputImage = pixelManipulationsImage;
+        
+        const manipulatedImage = await generateImageWithPrompt(manipulationPromptParts.join(' '), newResult.inputImage);
+        newResult.manipulatedImage = manipulatedImage;
+        newResult.generativeModelInputImage = manipulatedImage;
     }
 
     if (step === 3) { // Generate Final Image

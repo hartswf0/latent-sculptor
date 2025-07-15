@@ -178,7 +178,7 @@ export function LatentSculptorPage() {
             delete newState.inputImage;
           }
           if (generationStep === 2) { // going from 2 to 1
-             delete newState.pixelManipulationsImage;
+             delete newState.manipulatedImage;
              delete newState.generativeModelInputImage;
           }
            if (generationStep === 3) { // going from 3 to 2

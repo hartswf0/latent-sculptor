@@ -8,6 +8,7 @@ import {
   Camera,
   Zap,
   BoxSelect,
+  Pencil,
 } from 'lucide-react';
 import type { NodeType } from './types';
 
@@ -19,7 +20,8 @@ export const NODE_TYPE_ICONS: Record<NodeType, { default: React.ElementType, [ke
     'pixel-color': { default: Palette },
     'setting-diffusion': { default: Combine },
     'setting-seed': { default: Hash },
-    'meta-node': { default: BoxSelect }
+    'meta-node': { default: BoxSelect },
+    'canny-edge': { default: Pencil },
 };
 
 export const NODE_TYPE_COLORS: Record<NodeType, string> = {
@@ -30,5 +32,6 @@ export const NODE_TYPE_COLORS: Record<NodeType, string> = {
     'pixel-color': '340 82% 57%', // Pink
     'setting-diffusion': '24 94% 50%', // Orange
     'setting-seed': '122 39% 49%', // Green
-    'meta-node': '0 0% 63%' // Gray
+    'meta-node': '0 0% 63%', // Gray
+    'canny-edge': '300 100% 50%', // Magenta
 };

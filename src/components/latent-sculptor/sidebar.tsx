@@ -31,13 +31,14 @@ const nodeTools = [
   { type: 'pixel-noise', name: 'Noise' },
   { type: 'pixel-brightness', name: 'Brightness' },
   { type: 'pixel-color', name: 'Color' },
+  { type: 'canny-edge', name: 'Canny Edge'},
   { type: 'setting-diffusion', name: 'Diffusion' },
   { type: 'setting-seed', name: 'Seed' },
 ];
 
 const stepActions = [
     { text: 'Generate Input Image', icon: Sparkles },
-    { text: 'Apply Pixel Manipulations', icon: ChevronsRight },
+    { text: 'Apply Manipulations', icon: ChevronsRight },
     { text: 'Generate Final Image', icon: ChevronsRight },
     { text: 'Reset Pipeline', icon: RefreshCcw }
 ];

@@ -1,4 +1,4 @@
-export type NodeType = 'text-prompt' | 'pixel-noise' | 'pixel-brightness' | 'pixel-color' | 'setting-diffusion' | 'setting-seed' | 'meta-node' | 'camera-input';
+export type NodeType = 'text-prompt' | 'pixel-noise' | 'pixel-brightness' | 'pixel-color' | 'setting-diffusion' | 'setting-seed' | 'meta-node' | 'camera-input' | 'canny-edge';
 
 export interface Node {
   id: string;
@@ -10,4 +10,3 @@ export interface Node {
   height?: number;
   nodes?: Node[]; // for meta-nodes
 }
-

@@ -35,10 +35,10 @@ const PipelineStage = ({ title, imageUrl, hint, isFinal = false, isLoading = fal
 
 export function PipelineVisualizer({ pipelineState, isGenerating, generationStep }: { pipelineState: Partial<ImageGenerationOutput>, isGenerating: boolean, generationStep: number }) {
     const stages = [
-        { title: 'Input Image', imageUrl: pipelineState?.inputImage || null, hint: 'abstract pattern', isLoading: isGenerating && generationStep === 0, isActive: generationStep >= 1 },
-        { title: 'Pixel Manipulations', imageUrl: pipelineState?.pixelManipulationsImage || null, hint: 'glitch art', isLoading: isGenerating && generationStep === 1, isActive: generationStep >= 2 },
+        { title: 'Input Image', imageUrl: pipelineState?.inputImage || null, hint: 'abstract pattern', isLoading: isGenerating && generationStep === 1, isActive: generationStep >= 1 },
+        { title: 'Manipulated Image', imageUrl: pipelineState?.manipulatedImage || null, hint: 'glitch art', isLoading: isGenerating && generationStep === 2, isActive: generationStep >= 2 },
         { title: 'Generative Model Input', imageUrl: pipelineState?.generativeModelInputImage || null, hint: 'noisy image', isLoading: false, isActive: generationStep >= 2 },
-        { title: 'Final Output', imageUrl: pipelineState?.finalImage || null, hint: 'futuristic city', isFinal: true, isLoading: isGenerating && generationStep === 2, isActive: generationStep >= 3 },
+        { title: 'Final Output', imageUrl: pipelineState?.finalImage || null, hint: 'futuristic city', isFinal: true, isLoading: isGenerating && generationStep === 3, isActive: generationStep >= 3 },
     ];
 
     return (
