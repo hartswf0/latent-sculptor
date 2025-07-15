@@ -160,6 +160,27 @@ export function LatentSculptorPage() {
     }
   }, [nodes, toast, generationStep, pipelineState]);
   
+  const handlePreviousStep = React.useCallback(() => {
+    if (generationStep > 0) {
+      setGenerationStep(prev => prev - 1);
+      
+      setPipelineState(current => {
+          const newState = {...current};
+          if (generationStep === 1) { // going from 1 to 0
+            delete newState.inputImage;
+          }
+          if (generationStep === 2) { // going from 2 to 1
+             delete newState.pixelManipulationsImage;
+             delete newState.generativeModelInputImage;
+          }
+           if (generationStep === 3) { // going from 3 to 2
+            delete newState.finalImage;
+          }
+          return newState;
+      });
+    }
+  }, [generationStep]);
+
   const handleReset = React.useCallback(() => {
     setPipelineState({});
     setGenerationStep(0);
@@ -176,6 +197,7 @@ export function LatentSculptorPage() {
         selectedNodeIds={selectedNodeIds}
         updateNodeValue={updateNodeValue}
         onNextStep={handleNextStep}
+        onPreviousStep={handlePreviousStep}
         onReset={handleReset}
         isGenerating={isGenerating}
         generationStep={generationStep}

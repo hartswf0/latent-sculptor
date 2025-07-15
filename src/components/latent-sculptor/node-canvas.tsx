@@ -28,7 +28,8 @@ export function NodeCanvas({
   const getInfluence = (y: number) => {
     if (!canvasRef.current) return 0;
     const canvasHeight = canvasRef.current.offsetHeight;
-    return (y / canvasHeight) * 100;
+    const influence = 100 - (y / canvasHeight) * 100;
+    return Math.max(0, Math.min(100, influence));
   };
   
   return (

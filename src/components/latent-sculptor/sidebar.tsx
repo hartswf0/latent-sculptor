@@ -15,6 +15,7 @@ import {
   Loader2,
   RefreshCcw,
   ChevronsRight,
+  ChevronLeft,
 } from 'lucide-react';
 import type { Node, NodeType } from './types';
 import { GuidanceTool } from './guidance-tool';
@@ -26,6 +27,7 @@ interface SidebarProps {
   selectedNodeIds: string[];
   updateNodeValue: (nodeId: string, value: any) => void;
   onNextStep: () => void;
+  onPreviousStep: () => void;
   onReset: () => void;
   isGenerating: boolean;
   generationStep: number;
@@ -49,7 +51,7 @@ const stepActions = [
 ];
 
 
-export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNodeValue, onNextStep, onReset, isGenerating, generationStep }: SidebarProps) {
+export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNodeValue, onNextStep, onPreviousStep, onReset, isGenerating, generationStep }: SidebarProps) {
   
   const handleActionClick = () => {
     if (generationStep < 3) {
@@ -65,14 +67,21 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
   return (
     <aside className="fixed top-16 left-0 w-72 h-[calc(100vh-4rem)] bg-card border-r border-border z-40 flex flex-col">
       <div className="p-4 border-b">
-        <Button onClick={handleActionClick} disabled={isGenerating} className="w-full h-12 text-base">
-            {isGenerating ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-                <ActionIcon className="mr-2 h-5 w-5" />
+        <div className="flex gap-2">
+            {generationStep > 0 && generationStep < 4 && (
+                 <Button onClick={onPreviousStep} disabled={isGenerating} variant="outline" size="icon" className="h-12 w-12">
+                    <ChevronLeft className="h-5 w-5" />
+                </Button>
             )}
-            {isGenerating ? 'Generating...' : currentAction.text}
-        </Button>
+            <Button onClick={handleActionClick} disabled={isGenerating} className="w-full h-12 text-base">
+                {isGenerating ? (
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                    <ActionIcon className="mr-2 h-5 w-5" />
+                )}
+                {isGenerating ? 'Generating...' : currentAction.text}
+            </Button>
+        </div>
       </div>
 
       <ScrollArea className="flex-1">
