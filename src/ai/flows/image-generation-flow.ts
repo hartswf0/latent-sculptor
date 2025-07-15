@@ -43,7 +43,7 @@ export async function generateImage(input: ImageGenerationInput): Promise<ImageG
 const generateImageWithPrompt = async (prompt: string, inputImage?: string): Promise<string> => {
     const promptConfig: any = {
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      config: { responseModalities: ['IMAGE'] },
+      config: { responseModalities: ['TEXT', 'IMAGE'] },
       prompt: []
     };
   
@@ -53,7 +53,7 @@ const generateImageWithPrompt = async (prompt: string, inputImage?: string): Pro
     promptConfig.prompt.push({ text: prompt });
 
     const { media } = await ai.generate(promptConfig);
-    if (!media.url) {
+    if (!media?.url) {
       throw new Error('Image generation failed.');
     }
     return media.url;
