@@ -10,10 +10,10 @@ const AnimatedChevron = ({ className }: { className?: string }) => (
     <ChevronRight className={cn("text-muted-foreground/50 animate-pulse-slow", className)} size={24} />
 );
 
-const PipelineStage = ({ title, imageUrl, hint, isFinal = false, isLoading = false }: { title: string, imageUrl: string | null, hint: string, isFinal?: boolean, isLoading?: boolean }) => (
+const PipelineStage = ({ title, imageUrl, hint, isFinal = false, isLoading = false, isActive = false }: { title: string, imageUrl: string | null, hint: string, isFinal?: boolean, isLoading?: boolean, isActive?: boolean }) => (
     <div className="flex flex-col items-center gap-2 flex-shrink-0">
         <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
-        <Card className={cn("w-32 h-20 md:w-48 md:h-32 overflow-hidden", isFinal && "border-accent shadow-lg shadow-accent/20")}>
+        <Card className={cn("w-32 h-20 md:w-48 md:h-32 overflow-hidden", (isFinal || isActive) && "border-accent shadow-lg shadow-accent/20")}>
             <CardContent className="p-0 relative h-full">
                 <Image
                     src={imageUrl || 'https://placehold.co/192x128.png'}
@@ -33,12 +33,12 @@ const PipelineStage = ({ title, imageUrl, hint, isFinal = false, isLoading = fal
     </div>
 );
 
-export function PipelineVisualizer({ pipelineState, isGenerating }: { pipelineState: ImageGenerationOutput | null, isGenerating: boolean }) {
+export function PipelineVisualizer({ pipelineState, isGenerating, generationStep }: { pipelineState: Partial<ImageGenerationOutput>, isGenerating: boolean, generationStep: number }) {
     const stages = [
-        { title: 'Input Image', imageUrl: pipelineState?.inputImage, hint: 'abstract pattern', isLoading: isGenerating && !pipelineState?.inputImage },
-        { title: 'Pixel Manipulations', imageUrl: pipelineState?.pixelManipulationsImage, hint: 'glitch art', isLoading: isGenerating && !pipelineState?.pixelManipulationsImage },
-        { title: 'Generative Model Input', imageUrl: pipelineState?.generativeModelInputImage, hint: 'noisy image', isLoading: isGenerating && !pipelineState?.generativeModelInputImage },
-        { title: 'Final Output', imageUrl: pipelineState?.finalImage, hint: 'futuristic city', isFinal: true, isLoading: isGenerating && !pipelineState?.finalImage },
+        { title: 'Input Image', imageUrl: pipelineState?.inputImage || null, hint: 'abstract pattern', isLoading: isGenerating && generationStep === 0, isActive: generationStep >= 1 },
+        { title: 'Pixel Manipulations', imageUrl: pipelineState?.pixelManipulationsImage || null, hint: 'glitch art', isLoading: isGenerating && generationStep === 1, isActive: generationStep >= 2 },
+        { title: 'Generative Model Input', imageUrl: pipelineState?.generativeModelInputImage || null, hint: 'noisy image', isLoading: false, isActive: generationStep >= 2 },
+        { title: 'Final Output', imageUrl: pipelineState?.finalImage || null, hint: 'futuristic city', isFinal: true, isLoading: isGenerating && generationStep === 2, isActive: generationStep >= 3 },
     ];
 
     return (

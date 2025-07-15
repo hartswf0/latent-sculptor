@@ -1,5 +1,5 @@
 'use client';
-import React, from 'react';
+import React from 'react';
 import { Header } from './header';
 import { Sidebar } from './sidebar';
 import { NodeCanvas } from './node-canvas';
@@ -8,7 +8,6 @@ import type { Node, NodeType } from './types';
 import { nanoid } from 'nanoid';
 import { generateImage, ImageGenerationOutput } from '@/ai/flows/image-generation-flow';
 import { useToast } from '@/hooks/use-toast';
-
 
 const initialNodes: Node[] = [
   {
@@ -42,8 +41,9 @@ export function LatentSculptorPage() {
   const [selectedNodeIds, setSelectedNodeIds] = React.useState<string[]>([]);
   const [draggingNode, setDraggingNode] = React.useState<{ id: string; offset: { x: number; y: number } } | null>(null);
   const canvasRef = React.useRef<HTMLDivElement>(null);
-  const [pipelineState, setPipelineState] = React.useState<ImageGenerationOutput | null>(null);
+  const [pipelineState, setPipelineState] = React.useState<Partial<ImageGenerationOutput>>({});
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [generationStep, setGenerationStep] = React.useState(0); // 0: idle, 1: input, 2: pixel, 3: final
   const { toast } = useToast();
   
   React.useEffect(() => {
@@ -142,23 +142,29 @@ export function LatentSculptorPage() {
     setSelectedNodeIds([metaNode.id]);
   }, [selectedNodeIds, nodes]);
 
-  const handleGenerate = React.useCallback(async () => {
+  const handleNextStep = React.useCallback(async () => {
     setIsGenerating(true);
-    setPipelineState(null);
     try {
-      const result = await generateImage({ nodes });
-      setPipelineState(result);
+        const result = await generateImage({ nodes, step: generationStep + 1, lastResult: pipelineState });
+        setPipelineState(result);
+        setGenerationStep(prev => prev + 1);
     } catch (error) {
-      console.error("Failed to generate image:", error);
-      toast({
-        variant: 'destructive',
-        title: 'Image Generation Failed',
-        description: error instanceof Error ? error.message : 'An unknown error occurred.',
-      });
+        console.error("Failed to generate image:", error);
+        toast({
+            variant: 'destructive',
+            title: 'Image Generation Failed',
+            description: error instanceof Error ? error.message : 'An unknown error occurred.',
+        });
     } finally {
-      setIsGenerating(false);
+        setIsGenerating(false);
     }
-  }, [nodes, toast]);
+  }, [nodes, toast, generationStep, pipelineState]);
+  
+  const handleReset = React.useCallback(() => {
+    setPipelineState({});
+    setGenerationStep(0);
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-background text-foreground" onMouseMove={handleMouseMove}>
@@ -169,8 +175,10 @@ export function LatentSculptorPage() {
         groupNodes={groupNodes}
         selectedNodeIds={selectedNodeIds}
         updateNodeValue={updateNodeValue}
-        onGenerate={handleGenerate}
+        onNextStep={handleNextStep}
+        onReset={handleReset}
         isGenerating={isGenerating}
+        generationStep={generationStep}
       />
       <main className="pt-16 pl-72 pb-44">
         <div className="h-[calc(100vh-16rem)] w-full">
@@ -185,7 +193,7 @@ export function LatentSculptorPage() {
             />
         </div>
       </main>
-      <PipelineVisualizer pipelineState={pipelineState} isGenerating={isGenerating} />
+      <PipelineVisualizer pipelineState={pipelineState} isGenerating={isGenerating} generationStep={generationStep} />
     </div>
   );
 }

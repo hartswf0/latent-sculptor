@@ -13,6 +13,8 @@ import {
   Camera,
   Sparkles,
   Loader2,
+  RefreshCcw,
+  ChevronsRight,
 } from 'lucide-react';
 import type { Node, NodeType } from './types';
 import { GuidanceTool } from './guidance-tool';
@@ -23,8 +25,10 @@ interface SidebarProps {
   groupNodes: () => void;
   selectedNodeIds: string[];
   updateNodeValue: (nodeId: string, value: any) => void;
-  onGenerate: () => void;
+  onNextStep: () => void;
+  onReset: () => void;
   isGenerating: boolean;
+  generationStep: number;
 }
 
 const nodeTools = [
@@ -37,17 +41,37 @@ const nodeTools = [
   { type: 'setting-seed', name: 'Seed', icon: Hash },
 ];
 
-export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNodeValue, onGenerate, isGenerating }: SidebarProps) {
+const stepActions = [
+    { text: 'Generate Input Image', icon: Sparkles },
+    { text: 'Apply Pixel Manipulations', icon: ChevronsRight },
+    { text: 'Generate Final Image', icon: ChevronsRight },
+    { text: 'Reset Pipeline', icon: RefreshCcw }
+];
+
+
+export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNodeValue, onNextStep, onReset, isGenerating, generationStep }: SidebarProps) {
+  
+  const handleActionClick = () => {
+    if (generationStep < 3) {
+      onNextStep();
+    } else {
+      onReset();
+    }
+  }
+
+  const currentAction = stepActions[generationStep];
+  const ActionIcon = currentAction.icon;
+
   return (
     <aside className="fixed top-16 left-0 w-72 h-[calc(100vh-4rem)] bg-card border-r border-border z-40 flex flex-col">
       <div className="p-4 border-b">
-        <Button onClick={onGenerate} disabled={isGenerating} className="w-full h-12 text-lg">
+        <Button onClick={handleActionClick} disabled={isGenerating} className="w-full h-12 text-base">
             {isGenerating ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             ) : (
-                <Sparkles className="mr-2 h-5 w-5" />
+                <ActionIcon className="mr-2 h-5 w-5" />
             )}
-            Generate Image
+            {isGenerating ? 'Generating...' : currentAction.text}
         </Button>
       </div>
 
@@ -84,4 +108,3 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
     </aside>
   );
 }
-
