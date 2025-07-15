@@ -2,7 +2,9 @@
 
 import React from 'react';
 import type { Node } from './types';
-import { NODE_TYPE_COLORS, NODE_TYPE_ICONS } from './node-config';
+import { NODE_TYPE_COLORS } from './node-config';
+import { Button } from '@/components/ui/button';
+import { HelpCircle } from 'lucide-react';
 
 const LatentSculptorIcon = () => (
     <svg
@@ -57,7 +59,7 @@ const GenerationGenome = ({ nodes, getInfluence }: { nodes: Node[], getInfluence
     )
 }
 
-export function Header({ nodes, getInfluence }: { nodes: Node[], getInfluence: (y: number) => number }) {
+export function Header({ nodes, getInfluence, onHelpClick }: { nodes: Node[], getInfluence: (y: number) => number, onHelpClick: () => void }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex items-center h-16 px-6 bg-card/80 backdrop-blur-sm border-b border-border">
       <div className="flex items-center gap-3 w-72">
@@ -66,6 +68,12 @@ export function Header({ nodes, getInfluence }: { nodes: Node[], getInfluence: (
       </div>
       <div className="flex-1 px-8 flex items-center gap-4">
         <GenerationGenome nodes={nodes} getInfluence={getInfluence} />
+      </div>
+       <div className="w-72 flex justify-end">
+        <Button variant="ghost" size="icon" onClick={onHelpClick}>
+          <HelpCircle className="h-5 w-5" />
+          <span className="sr-only">Help</span>
+        </Button>
       </div>
     </header>
   );

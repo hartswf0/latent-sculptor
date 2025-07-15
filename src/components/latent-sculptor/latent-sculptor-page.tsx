@@ -8,6 +8,7 @@ import type { Node, NodeType } from './types';
 import { nanoid } from 'nanoid';
 import { generateImage, ImageGenerationOutput } from '@/ai/flows/image-generation-flow';
 import { useToast } from '@/hooks/use-toast';
+import { WelcomeDialog } from './welcome-dialog';
 
 const initialNodes: Node[] = [
   {
@@ -36,6 +37,8 @@ const initialNodes: Node[] = [
   },
 ];
 
+const LOCAL_STORAGE_KEY = 'latent-sculptor-has-seen-tutorial';
+
 export function LatentSculptorPage() {
   const [nodes, setNodes] = React.useState<Node[]>(initialNodes);
   const [selectedNodeIds, setSelectedNodeIds] = React.useState<string[]>([]);
@@ -45,6 +48,15 @@ export function LatentSculptorPage() {
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [generationStep, setGenerationStep] = React.useState(0); // 0: idle, 1: input, 2: pixel, 3: final
   const { toast } = useToast();
+  const [isWelcomeOpen, setIsWelcomeOpen] = React.useState(false);
+  
+  React.useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!hasSeenTutorial) {
+      setIsWelcomeOpen(true);
+      localStorage.setItem(LOCAL_STORAGE_KEY, 'true');
+    }
+  }, []);
   
   React.useEffect(() => {
     const handleMouseUp = () => setDraggingNode(null);
@@ -194,10 +206,10 @@ export function LatentSculptorPage() {
     setGenerationStep(0);
   }, []);
 
-
   return (
     <div className="min-h-screen bg-background text-foreground" onMouseMove={handleMouseMove}>
-      <Header nodes={nodes} getInfluence={getInfluence} />
+      <WelcomeDialog open={isWelcomeOpen} onOpenChange={setIsWelcomeOpen} />
+      <Header nodes={nodes} getInfluence={getInfluence} onHelpClick={() => setIsWelcomeOpen(true)} />
       <Sidebar 
         nodes={nodes}
         addNode={addNode} 
