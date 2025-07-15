@@ -103,7 +103,8 @@ The application can also be exported as a static site. In this mode, the server-
     - Go to your repository's **Settings** tab.
     - Navigate to the **Pages** section in the left sidebar.
     - Under "Build and deployment", select the source as **Deploy from a branch**.
-    - Choose the `main` (or `master`) branch and the `/docs` folder (or specify the build output folder if different). For this project, you will point it to the `out` directory created by the build step, though GitHub Pages settings might require some adjustments to serve from a subfolder. A common practice is to use GitHub Actions to automate the build and deployment step.
+    - Choose the `main` (or `master`) branch and the `/out` folder. Save your changes.
+    - After a few minutes, your site should be live at the provided GitHub Pages URL.
 
 ## Inspiration & Credits
 
