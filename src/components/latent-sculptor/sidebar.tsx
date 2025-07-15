@@ -121,7 +121,17 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, onNextSte
                     <KeyRound className="h-4 w-4" />
                     Client-Side API Key
                 </Label>
-                <p className="text-xs text-muted-foreground">Optional. For static deployments. Key is not stored.</p>
+                <p className="text-xs text-muted-foreground">
+                    Optional. For static demos where a server is not available. Your key is not stored.
+                    <a 
+                        href="https://aistudio.google.com/app/apikey" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-primary underline ml-1"
+                    >
+                        Get a key here.
+                    </a>
+                </p>
               </div>
               <Input 
                 id="api-key"

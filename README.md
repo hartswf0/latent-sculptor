@@ -26,9 +26,9 @@ The canvas is your workspace. You can add and manipulate different types of node
 - **Seed**: A number that initializes the random generation. Using the same seed with the same prompt will produce similar results.
 - **Group**: Combines multiple selected nodes into a single, manageable unit.
 
-## Getting Started
+## Getting Started (Server-based Development)
 
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes. This setup uses the Next.js server for secure API calls.
 
 ### Prerequisites
 
@@ -70,6 +70,41 @@ Follow these instructions to get a copy of the project up and running on your lo
     ```
     Open [http://localhost:9002](http://localhost:9002) with your browser to see the result.
 
+## Deployment
+
+This application supports two deployment modes: **server-based** and **static**.
+
+### Server-Based Deployment (Recommended)
+
+This is a Next.js application that uses server-side code to handle AI image generation. This is the most secure and robust way to deploy the app.
+
+**Hosting Providers**
+
+You need a hosting provider that supports Node.js environments. Here are some excellent choices:
+
+-   **Vercel**: The creators of Next.js. Offers a simple git-push-to-deploy workflow and a generous free tier.
+-   **Netlify**: Another popular, easy-to-use platform with great support for Next.js.
+-   **Firebase App Hosting**: A great choice if you want to stay within the Google Cloud ecosystem.
+
+When deploying to any of these providers, you will need to set the `GOOGLE_API_KEY` as an environment variable in your hosting provider's dashboard.
+
+### Static Deployment (e.g., GitHub Pages)
+
+The application can also be exported as a static site. In this mode, the server-side AI generation is disabled. Instead, users must provide their own Google AI API key in the sidebar to generate images directly from their browser.
+
+1.  **Build the Static Site**
+    Run the following command to build the application. This will create a static version in the `out/` directory.
+    ```bash
+    npm run build
+    ```
+
+2.  **Deploy to GitHub Pages**
+    - Push your code to a GitHub repository.
+    - Go to your repository's **Settings** tab.
+    - Navigate to the **Pages** section in the left sidebar.
+    - Under "Build and deployment", select the source as **Deploy from a branch**.
+    - Choose the `main` (or `master`) branch and the `/docs` folder (or specify the build output folder if different). For this project, you will point it to the `out` directory created by the build step, though GitHub Pages settings might require some adjustments to serve from a subfolder. A common practice is to use GitHub Actions to automate the build and deployment step.
+
 ## Inspiration & Credits
 
 This application is heavily inspired by the principles of "Holistic Prompt Craft" as explored in the academic paper by Joseph Lindley and Roger Whitham. Their work on the PromptJ and PromptTank user interfaces demonstrated novel ways of interacting with generative AI, moving beyond simple text boxes to a more tactile, spatial, and holistic approach.
@@ -79,15 +114,3 @@ This application is heavily inspired by the principles of "Holistic Prompt Craft
 > Joseph Lindley & Roger Whitham, Imagination Lancaster, Lancaster University, UK
 >
 > https://doi.org/10.1145/3715336.3735414
-
-## Deployment
-
-This is a Next.js application that uses server-side code to handle AI image generation. Because of this, it cannot be deployed to static hosting services like GitHub Pages.
-
-You need a hosting provider that supports Node.js environments. Here are some excellent choices that offer seamless deployment for Next.js apps:
-
--   **Vercel**: The creators of Next.js. Offers a simple git-push-to-deploy workflow and a generous free tier.
--   **Netlify**: Another popular, easy-to-use platform with great support for Next.js.
--   **Firebase App Hosting**: A great choice if you want to stay within the Google Cloud ecosystem.
-
-When deploying to any of these providers, you will need to set the `GOOGLE_API_KEY` as an environment variable in your hosting provider's dashboard. Do not expose this key in your client-side code.
