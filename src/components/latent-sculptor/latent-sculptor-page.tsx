@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, from 'react';
 import { Header } from './header';
 import { Sidebar } from './sidebar';
 import { NodeCanvas } from './node-canvas';
@@ -7,6 +7,8 @@ import { PipelineVisualizer } from './pipeline-visualizer';
 import type { Node, NodeType } from './types';
 import { nanoid } from 'nanoid';
 import { generateImage, ImageGenerationOutput } from '@/ai/flows/image-generation-flow';
+import { useToast } from '@/hooks/use-toast';
+
 
 const initialNodes: Node[] = [
   {
@@ -36,20 +38,21 @@ const initialNodes: Node[] = [
 ];
 
 export function LatentSculptorPage() {
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
-  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
-  const [draggingNode, setDraggingNode] = useState<{ id: string; offset: { x: number; y: number } } | null>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const [pipelineState, setPipelineState] = useState<ImageGenerationOutput | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [nodes, setNodes] = React.useState<Node[]>(initialNodes);
+  const [selectedNodeIds, setSelectedNodeIds] = React.useState<string[]>([]);
+  const [draggingNode, setDraggingNode] = React.useState<{ id: string; offset: { x: number; y: number } } | null>(null);
+  const canvasRef = React.useRef<HTMLDivElement>(null);
+  const [pipelineState, setPipelineState] = React.useState<ImageGenerationOutput | null>(null);
+  const [isGenerating, setIsGenerating] = React.useState(false);
+  const { toast } = useToast();
   
-  useEffect(() => {
+  React.useEffect(() => {
     const handleMouseUp = () => setDraggingNode(null);
     window.addEventListener('mouseup', handleMouseUp);
     return () => window.removeEventListener('mouseup', handleMouseUp);
   }, []);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+  const handleMouseMove = React.useCallback((e: React.MouseEvent) => {
     if (draggingNode && canvasRef.current) {
       const canvasRect = canvasRef.current.getBoundingClientRect();
       const newX = e.clientX - canvasRect.left - draggingNode.offset.x;
@@ -65,7 +68,7 @@ export function LatentSculptorPage() {
     }
   }, [draggingNode]);
 
-  const handleNodeMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>, nodeId: string) => {
+  const handleNodeMouseDown = React.useCallback((e: React.MouseEvent<HTMLDivElement>, nodeId: string) => {
     e.stopPropagation();
     const nodeElement = e.currentTarget.parentElement;
     if (nodeElement) {
@@ -81,7 +84,7 @@ export function LatentSculptorPage() {
     }
   }, []);
 
-  const handleNodeSelect = useCallback((e: React.MouseEvent, nodeId: string) => {
+  const handleNodeSelect = React.useCallback((e: React.MouseEvent, nodeId: string) => {
     e.stopPropagation();
     if (nodeId === '') { // Deselect all if clicking canvas
         setSelectedNodeIds([]);
@@ -96,7 +99,7 @@ export function LatentSculptorPage() {
     }
   }, []);
 
-  const addNode = useCallback((type: NodeType, name: string) => {
+  const addNode = React.useCallback((type: NodeType, name: string) => {
     const newNode: Node = {
       id: nanoid(),
       type,
@@ -108,16 +111,16 @@ export function LatentSculptorPage() {
     setNodes(prev => [...prev, newNode]);
   }, [nodes]);
 
-  const deleteNode = useCallback((nodeId: string) => {
+  const deleteNode = React.useCallback((nodeId: string) => {
     setNodes(prev => prev.filter(node => node.id !== nodeId));
     setSelectedNodeIds(prev => prev.filter(id => id !== nodeId));
   }, []);
 
-  const updateNodeValue = useCallback((nodeId: string, value: any) => {
+  const updateNodeValue = React.useCallback((nodeId: string, value: any) => {
     setNodes(prev => prev.map(node => node.id === nodeId ? { ...node, value } : node));
   }, []);
   
-  const groupNodes = useCallback(() => {
+  const groupNodes = React.useCallback(() => {
     if (selectedNodeIds.length < 2) return;
     const nodesToGroup = nodes.filter(n => selectedNodeIds.includes(n.id));
     const remainingNodes = nodes.filter(n => !selectedNodeIds.includes(n.id));
@@ -139,7 +142,7 @@ export function LatentSculptorPage() {
     setSelectedNodeIds([metaNode.id]);
   }, [selectedNodeIds, nodes]);
 
-  const handleGenerate = useCallback(async () => {
+  const handleGenerate = React.useCallback(async () => {
     setIsGenerating(true);
     setPipelineState(null);
     try {
@@ -147,10 +150,15 @@ export function LatentSculptorPage() {
       setPipelineState(result);
     } catch (error) {
       console.error("Failed to generate image:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Image Generation Failed',
+        description: error instanceof Error ? error.message : 'An unknown error occurred.',
+      });
     } finally {
       setIsGenerating(false);
     }
-  }, [nodes]);
+  }, [nodes, toast]);
 
   return (
     <div className="min-h-screen bg-background text-foreground" onMouseMove={handleMouseMove}>
@@ -177,8 +185,7 @@ export function LatentSculptorPage() {
             />
         </div>
       </main>
-      <PipelineVisualizer pipelineState={pipelineState} />
+      <PipelineVisualizer pipelineState={pipelineState} isGenerating={isGenerating} />
     </div>
   );
 }
-

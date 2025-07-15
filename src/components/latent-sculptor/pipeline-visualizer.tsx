@@ -10,13 +10,13 @@ const AnimatedChevron = ({ className }: { className?: string }) => (
     <ChevronRight className={cn("text-muted-foreground/50 animate-pulse-slow", className)} size={24} />
 );
 
-const PipelineStage = ({ title, imageUrl, hint, isFinal = false, isLoading = false }: { title: string, imageUrl: string, hint: string, isFinal?: boolean, isLoading?: boolean }) => (
+const PipelineStage = ({ title, imageUrl, hint, isFinal = false, isLoading = false }: { title: string, imageUrl: string | null, hint: string, isFinal?: boolean, isLoading?: boolean }) => (
     <div className="flex flex-col items-center gap-2 flex-shrink-0">
         <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
         <Card className={cn("w-32 h-20 md:w-48 md:h-32 overflow-hidden", isFinal && "border-accent shadow-lg shadow-accent/20")}>
-            <CardContent className="p-0 relative">
+            <CardContent className="p-0 relative h-full">
                 <Image
-                    src={imageUrl}
+                    src={imageUrl || 'https://placehold.co/192x128.png'}
                     alt={title}
                     width={192}
                     height={128}
@@ -33,12 +33,12 @@ const PipelineStage = ({ title, imageUrl, hint, isFinal = false, isLoading = fal
     </div>
 );
 
-export function PipelineVisualizer({ pipelineState }: { pipelineState: ImageGenerationOutput | null }) {
+export function PipelineVisualizer({ pipelineState, isGenerating }: { pipelineState: ImageGenerationOutput | null, isGenerating: boolean }) {
     const stages = [
-        { title: 'Input Image', imageUrl: 'https://placehold.co/192x128.png', hint: 'abstract pattern' },
-        { title: 'Pixel Manipulations', imageUrl: 'https://placehold.co/192x128.png', hint: 'glitch art' },
-        { title: 'Generative Model Input', imageUrl: 'https://placehold.co/192x128.png', hint: 'noisy image' },
-        { title: 'Final Output', imageUrl: pipelineState?.finalImage || 'https://placehold.co/192x128.png', hint: 'futuristic city', isFinal: true },
+        { title: 'Input Image', imageUrl: pipelineState?.inputImage, hint: 'abstract pattern', isLoading: isGenerating && !pipelineState?.inputImage },
+        { title: 'Pixel Manipulations', imageUrl: pipelineState?.pixelManipulationsImage, hint: 'glitch art', isLoading: isGenerating && !pipelineState?.pixelManipulationsImage },
+        { title: 'Generative Model Input', imageUrl: pipelineState?.generativeModelInputImage, hint: 'noisy image', isLoading: isGenerating && !pipelineState?.generativeModelInputImage },
+        { title: 'Final Output', imageUrl: pipelineState?.finalImage, hint: 'futuristic city', isFinal: true, isLoading: isGenerating && !pipelineState?.finalImage },
     ];
 
     return (
@@ -46,7 +46,7 @@ export function PipelineVisualizer({ pipelineState }: { pipelineState: ImageGene
             <div className="flex items-center justify-center p-4 space-x-2 md:space-x-4 overflow-x-auto">
                 {stages.map((stage, index) => (
                     <React.Fragment key={stage.title}>
-                        <PipelineStage {...stage} isLoading={!pipelineState?.finalImage && stage.isFinal} />
+                        <PipelineStage {...stage} />
                         {index < stages.length - 1 && (
                             <div className="flex-shrink-0">
                                 <AnimatedChevron />
@@ -67,4 +67,3 @@ export function PipelineVisualizer({ pipelineState }: { pipelineState: ImageGene
         </footer>
     );
 }
-

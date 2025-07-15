@@ -27,7 +27,10 @@ const ImageGenerationInputSchema = z.object({
 export type ImageGenerationInput = z.infer<typeof ImageGenerationInputSchema>;
 
 const ImageGenerationOutputSchema = z.object({
-  finalImage: z.string().describe("The generated image as a data URI. Expected format: 'data:image/png;base64,<encoded_data>'."),
+  inputImage: z.string().describe("The input image as a data URI. This could be a camera capture or a generated noise pattern. Expected format: 'data:image/png;base64,<encoded_data>'."),
+  pixelManipulationsImage: z.string().describe("An image representing the pixel manipulations stage. Expected format: 'data:image/png;base64,<encoded_data>'."),
+  generativeModelInputImage: z.string().describe("An image representing the input to the generative model. Expected format: 'data:image/png;base64,<encoded_data>'."),
+  finalImage: z.string().describe("The final generated image as a data URI. Expected format: 'data:image/png;base64,<encoded_data>'."),
 });
 export type ImageGenerationOutput = z.infer<typeof ImageGenerationOutputSchema>;
 
@@ -38,18 +41,15 @@ export async function generateImage(input: ImageGenerationInput): Promise<ImageG
 
 const imageGenerationPrompt = ai.definePrompt({
   name: 'imageGenerationPrompt',
-  input: { schema: ImageGenerationInputSchema },
+  input: { schema: z.object({ combinedPrompt: z.string() }) },
   output: { schema: ImageGenerationOutputSchema },
-  prompt: `You are an AI image generation model. Generate an image based on the following node graph.
-  The nodes are ordered by their influence (position on the y-axis).
-  The most influential node is the text prompt.
-  Other nodes modify the image generation process.
-  
-  Nodes:
-  {{#each nodes}}
-  - Type: {{type}}, Name: {{name}}, Value: {{json value}}
-  {{/each}}
-  `,
+  prompt: `You are an AI image generation model that also creates representations of intermediate steps in an image pipeline. Based on the following detailed prompt, generate four images:
+1.  **inputImage**: If a camera image is provided, use it. Otherwise, generate a simple abstract noise or pattern that could serve as a base.
+2.  **pixelManipulationsImage**: Generate an image that visualizes the described pixel manipulations (like noise, brightness, color adjustments) applied to the input image. This should look like a heavily filtered or glitched version of the input.
+3.  **generativeModelInputImage**: Generate an image that represents the final state before diffusion. This should be a noisy, abstract version of what the final image will be, incorporating all the prompt elements.
+4.  **finalImage**: The final, high-quality, hyperrealistic image as described in the prompt.
+
+Prompt: {{{combinedPrompt}}}`,
 });
 
 
@@ -60,26 +60,68 @@ const imageGenerationFlow = ai.defineFlow(
     outputSchema: ImageGenerationOutputSchema,
   },
   async (input) => {
-    const textPromptNode = input.nodes.find(node => node.type === 'text-prompt');
-    const promptText = textPromptNode ? String(textPromptNode.value) : 'A beautiful landscape.';
+    // Sort nodes by y-position to determine influence
+    const sortedNodes = [...input.nodes].sort((a, b) => a.position.y - b.position.y);
 
-    // A more complex implementation could use tools to interpret each node.
-    // For now, we'll just use the main text prompt.
+    let promptParts: string[] = [];
+    let cameraNode = null;
 
-    const { media } = await ai.generate({
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: promptText,
-      config: {
-        responseModalities: ['TEXT', 'IMAGE'],
-      },
+    sortedNodes.forEach(node => {
+      switch (node.type) {
+        case 'text-prompt':
+          if(node.value) promptParts.push(`Primary subject: "${node.value}".`);
+          break;
+        case 'camera-input':
+            if (node.value) {
+                cameraNode = node;
+                promptParts.push(`Base the image on the provided camera capture.`);
+            }
+            break;
+        case 'pixel-noise':
+          promptParts.push(`with ${node.value}% pixel noise.`);
+          break;
+        case 'pixel-brightness':
+          promptParts.push(`with ${node.value}% brightness.`);
+          break;
+        case 'pixel-color':
+          promptParts.push(`tinted with the RGB color (${node.value.r}, ${node.value.g}, ${node.value.b}).`);
+          break;
+        case 'setting-diffusion':
+          promptParts.push(`Use a diffusion strength of ${node.value}%.`);
+          break;
+        case 'setting-seed':
+            promptParts.push(`Use the seed ${node.value} for generation.`);
+            break;
+        case 'meta-node':
+            // In a more complex scenario, meta-nodes could encapsulate a sub-prompt.
+            // For now, we'll just acknowledge it.
+            promptParts.push(`within a group titled "${node.name}".`);
+            break;
+      }
     });
 
-    if (!media.url) {
-      throw new Error('Image generation failed.');
+    if (promptParts.length === 0) {
+        promptParts.push("A stunningly beautiful mushroom, glowing with bioluminescence in a dark forest, cinematic, hyperrealistic.");
     }
 
-    return {
-      finalImage: media.url,
+    const combinedPrompt = promptParts.join(' ');
+
+    const promptInput: z.infer<typeof imageGenerationPrompt.input.schema> = {
+        combinedPrompt
     };
+
+    if (cameraNode?.value) {
+        // Pass the camera data URI to the prompt's media parameter.
+        // @ts-ignore
+        promptInput.media = { url: cameraNode.value };
+    }
+
+    const { output } = await imageGenerationPrompt(promptInput);
+
+    if (!output?.finalImage) {
+        throw new Error("Image generation failed to return a final image.");
+    }
+    
+    return output;
   }
 );
