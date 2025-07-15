@@ -82,4 +82,12 @@ This application is heavily inspired by the principles of "Holistic Prompt Craft
 
 ## Deployment
 
-When deploying your application to a hosting provider (like Vercel, Netlify, or Firebase App Hosting), you will need to set the `GOOGLE_API_KEY` as an environment variable in your hosting provider's dashboard. Do not expose this key in your client-side code.
+This is a Next.js application that uses server-side code to handle AI image generation. Because of this, it cannot be deployed to static hosting services like GitHub Pages.
+
+You need a hosting provider that supports Node.js environments. Here are some excellent choices that offer seamless deployment for Next.js apps:
+
+-   **Vercel**: The creators of Next.js. Offers a simple git-push-to-deploy workflow and a generous free tier.
+-   **Netlify**: Another popular, easy-to-use platform with great support for Next.js.
+-   **Firebase App Hosting**: A great choice if you want to stay within the Google Cloud ecosystem.
+
+When deploying to any of these providers, you will need to set the `GOOGLE_API_KEY` as an environment variable in your hosting provider's dashboard. Do not expose this key in your client-side code.
