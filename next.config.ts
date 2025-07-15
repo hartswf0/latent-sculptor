@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/latent-sculptor/' : '',
 };
 
 export default nextConfig;
