@@ -9,6 +9,7 @@ import { nanoid } from 'nanoid';
 import { generateImage, ImageGenerationOutput } from '@/ai/flows/image-generation-flow';
 import { useToast } from '@/hooks/use-toast';
 import { WelcomeDialog } from './welcome-dialog';
+import { clientSideGenerate } from '@/ai/client-side-generation';
 
 const initialNodes: Node[] = [
   {
@@ -49,6 +50,7 @@ export function LatentSculptorPage() {
   const [generationStep, setGenerationStep] = React.useState(0); // 0: idle, 1: input, 2: pixel, 3: final
   const { toast } = useToast();
   const [isWelcomeOpen, setIsWelcomeOpen] = React.useState(false);
+  const [apiKey, setApiKey] = React.useState('');
   
   React.useEffect(() => {
     const hasSeenTutorial = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -164,8 +166,15 @@ export function LatentSculptorPage() {
 
   const handleNextStep = React.useCallback(async () => {
     setIsGenerating(true);
+    const generationPayload = { nodes, step: generationStep + 1, lastResult: pipelineState };
+    
     try {
-        const result = await generateImage({ nodes, step: generationStep + 1, lastResult: pipelineState });
+        let result;
+        if (apiKey) {
+            result = await clientSideGenerate(generationPayload, apiKey);
+        } else {
+            result = await generateImage(generationPayload);
+        }
         setPipelineState(result);
         setGenerationStep(prev => prev + 1);
     } catch (error) {
@@ -178,7 +187,7 @@ export function LatentSculptorPage() {
     } finally {
         setIsGenerating(false);
     }
-  }, [nodes, toast, generationStep, pipelineState]);
+  }, [nodes, toast, generationStep, pipelineState, apiKey]);
   
   const handlePreviousStep = React.useCallback(() => {
     if (generationStep > 0) {
@@ -220,6 +229,8 @@ export function LatentSculptorPage() {
         onReset={handleReset}
         isGenerating={isGenerating}
         generationStep={generationStep}
+        apiKey={apiKey}
+        setApiKey={setApiKey}
       />
       <main className="pt-16 pl-72 pb-44">
         <div className="h-[calc(100vh-16rem)] w-full">

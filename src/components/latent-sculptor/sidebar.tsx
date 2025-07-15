@@ -8,10 +8,13 @@ import {
   ChevronsRight,
   ChevronLeft,
   Sparkles,
-  BoxSelect
+  BoxSelect,
+  KeyRound
 } from 'lucide-react';
 import type { Node, NodeType } from './types';
 import { NODE_TYPE_ICONS } from './node-config';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
 interface SidebarProps {
   nodes: Node[];
@@ -23,6 +26,8 @@ interface SidebarProps {
   onReset: () => void;
   isGenerating: boolean;
   generationStep: number;
+  apiKey: string;
+  setApiKey: (key: string) => void;
 }
 
 const nodeTools = [
@@ -44,7 +49,7 @@ const stepActions = [
 ];
 
 
-export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, onNextStep, onPreviousStep, onReset, isGenerating, generationStep }: SidebarProps) {
+export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, onNextStep, onPreviousStep, onReset, isGenerating, generationStep, apiKey, setApiKey }: SidebarProps) {
   
   const handleActionClick = () => {
     if (generationStep < 3) {
@@ -106,6 +111,25 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, onNextSte
                   Group Selected ({selectedNodeIds.length})
               </Button>
               <p className="text-xs text-muted-foreground mt-2 text-center">Select 2 or more nodes to group them.</p>
+          </div>
+
+          <Separator className="my-0" />
+
+          <div className="p-4 space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="api-key" className="flex items-center gap-2 text-foreground">
+                    <KeyRound className="h-4 w-4" />
+                    Client-Side API Key
+                </Label>
+                <p className="text-xs text-muted-foreground">Optional. For static deployments. Key is not stored.</p>
+              </div>
+              <Input 
+                id="api-key"
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Enter your Google AI API Key"
+              />
           </div>
       </ScrollArea>
     </aside>
