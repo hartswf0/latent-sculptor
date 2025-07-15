@@ -1,5 +1,7 @@
 import type {NextConfig} from 'next';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
   output: 'export',
   typescript: {
@@ -19,7 +21,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/latent-sculptor/' : '',
+  // Set the asset prefix and base path for GitHub Pages.
+  // The repository name is 'latent-sculptor'.
+  assetPrefix: isProd ? '/latent-sculptor/' : '',
+  basePath: isProd ? '/latent-sculptor' : '',
 };
 
 export default nextConfig;

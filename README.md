@@ -26,50 +26,6 @@ The canvas is your workspace. You can add and manipulate different types of node
 - **Seed**: A number that initializes the random generation. Using the same seed with the same prompt will produce similar results.
 - **Group**: Combines multiple selected nodes into a single, manageable unit.
 
-## Getting Started (Server-based Development)
-
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes. This setup uses the Next.js server for secure API calls.
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (version 20 or later recommended)
-- [npm](https://www.npmjs.com/) (usually comes with Node.js)
-- A [Google AI API Key](https://aistudio.google.com/app/apikey) for generative AI features.
-
-### Installation and Setup
-
-1.  **Clone the repository**
-    If you haven't already, clone the repository to your local machine:
-    ```bash
-    git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git
-    cd YOUR_REPOSITORY_NAME
-    ```
-
-2.  **Create an Environment File**
-    The application requires a Google AI API key to function. You'll need to create a local environment file to store this key securely.
-
-    Create a new file in the root of your project named `.env.local`.
-
-3.  **Add Your API Key**
-    Open the `.env.local` file and add your Google AI API key as follows:
-    ```env
-    GOOGLE_API_KEY=YOUR_API_KEY_HERE
-    ```
-    You can get your free API key from [Google AI Studio](https://aistudio.google.com/app/apikey). The `.gitignore` file is already configured to prevent this file from being committed to GitHub.
-
-4.  **Install Dependencies**
-    Install all the required npm packages:
-    ```bash
-    npm install
-    ```
-
-5.  **Run the Development Server**
-    Start the Next.js development server:
-    ```bash
-    npm run dev
-    ```
-    Open [http://localhost:9002](http://localhost:9002) with your browser to see the result.
-
 ## Deployment
 
 This application supports two deployment modes: **server-based** and **static**.
@@ -88,23 +44,32 @@ You need a hosting provider that supports Node.js environments. Here are some ex
 
 When deploying to any of these providers, you will need to set the `GOOGLE_API_KEY` as an environment variable in your hosting provider's dashboard.
 
-### Static Deployment (e.g., GitHub Pages)
+### Static Deployment (GitHub Pages)
 
 The application can also be exported as a static site. In this mode, the server-side AI generation is disabled. Instead, users must provide their own Google AI API key in the sidebar to generate images directly from their browser.
 
-1.  **Build the Static Site**
-    Run the following command to build the application. This will create a static version in the `out/` directory.
+**The Easy Way: Using the GitHub Action**
+
+This repository is already configured with a GitHub Action that will automatically build and deploy your site to GitHub Pages whenever you push to the `main` branch.
+
+1.  **Push Your Code**: Simply commit and push your changes to the `main` branch of your GitHub repository.
     ```bash
+    git push origin main
+    ```
+2.  **Enable GitHub Pages**: In your GitHub repository, go to **Settings > Pages**. Under "Build and deployment", select the source as **GitHub Actions**. This is usually the default.
+3.  **Wait for Deployment**: Go to the **Actions** tab in your repository. You will see the `deploy` workflow running. Once it's complete, your site will be live at the URL provided on the Pages settings screen (e.g., `https://<your-username>.github.io/latent-sculptor/`).
+
+**The Manual Way**
+
+If you prefer to build the site locally:
+
+1.  **Install and Build**:
+    ```bash
+    npm install
     npm run build
     ```
-
-2.  **Deploy to GitHub Pages**
-    - Push your code to a GitHub repository.
-    - Go to your repository's **Settings** tab.
-    - Navigate to the **Pages** section in the left sidebar.
-    - Under "Build and deployment", select the source as **Deploy from a branch**.
-    - Choose the `main` (or `master`) branch and the `/out` folder. Save your changes.
-    - After a few minutes, your site should be live at the provided GitHub Pages URL.
+    This creates an `out` folder with all the static files.
+2.  **Deploy**: Deploy the contents of the `out` folder to your static hosting provider.
 
 ## Inspiration & Credits
 
