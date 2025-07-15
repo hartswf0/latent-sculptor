@@ -18,6 +18,7 @@ const NodeSchema = z.object({
   value: z.any(),
   width: z.number().optional(),
   height: z.number().optional(),
+  nodes: z.array(z.lazy(() => NodeSchema)).optional(),
 });
 
 const ImageGenerationInputSchema = z.object({
