@@ -39,19 +39,24 @@ export async function generateImage(input: ImageGenerationInput): Promise<ImageG
   return imageGenerationFlow(input);
 }
 
-const imageGenerationPrompt = ai.definePrompt({
-  name: 'imageGenerationPrompt',
-  input: { schema: z.object({ combinedPrompt: z.string() }) },
-  output: { schema: ImageGenerationOutputSchema },
-  prompt: `You are an AI image generation model that also creates representations of intermediate steps in an image pipeline. Based on the following detailed prompt, generate four images:
-1.  **inputImage**: If a camera image is provided, use it. Otherwise, generate a simple abstract noise or pattern that could serve as a base.
-2.  **pixelManipulationsImage**: Generate an image that visualizes the described pixel manipulations (like noise, brightness, color adjustments) applied to the input image. This should look like a heavily filtered or glitched version of the input.
-3.  **generativeModelInputImage**: Generate an image that represents the final state before diffusion. This should be a noisy, abstract version of what the final image will be, incorporating all the prompt elements.
-4.  **finalImage**: The final, high-quality, hyperrealistic image as described in the prompt.
+const generateImageWithPrompt = async (prompt: string, inputImage?: string): Promise<string> => {
+    const promptConfig: any = {
+      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      config: { responseModalities: ['IMAGE'] },
+      prompt: []
+    };
+  
+    if (inputImage) {
+        promptConfig.prompt.push({ media: { url: inputImage } });
+    }
+    promptConfig.prompt.push({ text: prompt });
 
-Prompt: {{{combinedPrompt}}}`,
-});
-
+    const { media } = await ai.generate(promptConfig);
+    if (!media.url) {
+      throw new Error('Image generation failed.');
+    }
+    return media.url;
+  };
 
 const imageGenerationFlow = ai.defineFlow(
   {
@@ -60,68 +65,71 @@ const imageGenerationFlow = ai.defineFlow(
     outputSchema: ImageGenerationOutputSchema,
   },
   async (input) => {
-    // Sort nodes by y-position to determine influence
-    const sortedNodes = [...input.nodes].sort((a, b) => a.position.y - b.position.y);
-
-    let promptParts: string[] = [];
-    let cameraNode = null;
-
-    sortedNodes.forEach(node => {
-      switch (node.type) {
-        case 'text-prompt':
-          if(node.value) promptParts.push(`Primary subject: "${node.value}".`);
-          break;
-        case 'camera-input':
-            if (node.value) {
-                cameraNode = node;
-                promptParts.push(`Base the image on the provided camera capture.`);
-            }
-            break;
-        case 'pixel-noise':
-          promptParts.push(`with ${node.value}% pixel noise.`);
-          break;
-        case 'pixel-brightness':
-          promptParts.push(`with ${node.value}% brightness.`);
-          break;
-        case 'pixel-color':
-          promptParts.push(`tinted with the RGB color (${node.value.r}, ${node.value.g}, ${node.value.b}).`);
-          break;
-        case 'setting-diffusion':
-          promptParts.push(`Use a diffusion strength of ${node.value}%.`);
-          break;
-        case 'setting-seed':
-            promptParts.push(`Use the seed ${node.value} for generation.`);
-            break;
-        case 'meta-node':
-            // In a more complex scenario, meta-nodes could encapsulate a sub-prompt.
-            // For now, we'll just acknowledge it.
-            promptParts.push(`within a group titled "${node.name}".`);
-            break;
-      }
-    });
-
-    if (promptParts.length === 0) {
-        promptParts.push("A stunningly beautiful mushroom, glowing with bioluminescence in a dark forest, cinematic, hyperrealistic.");
-    }
-
-    const combinedPrompt = promptParts.join(' ');
-
-    const promptInput: z.infer<typeof imageGenerationPrompt.input.schema> = {
-        combinedPrompt
-    };
-
-    if (cameraNode?.value) {
-        // Pass the camera data URI to the prompt's media parameter.
-        // @ts-ignore
-        promptInput.media = { url: cameraNode.value };
-    }
-
-    const { output } = await imageGenerationPrompt(promptInput);
-
-    if (!output?.finalImage) {
-        throw new Error("Image generation failed to return a final image.");
-    }
+    const { nodes } = input;
+    const cameraNode = nodes.find(n => n.type === 'camera-input' && n.value);
     
-    return output;
+    // Step 1: Determine Input Image
+    let inputImage: string;
+    if (cameraNode) {
+        inputImage = cameraNode.value;
+    } else {
+        inputImage = await generateImageWithPrompt("abstract gray and white noise pattern, 50% gray");
+    }
+
+    // Step 2: Apply Pixel Manipulations
+    const pixelNodes = nodes.filter(n => ['pixel-noise', 'pixel-brightness', 'pixel-color'].includes(n.type));
+    let pixelPromptParts: string[] = ["Apply the following manipulations to the image:"];
+    if (pixelNodes.length > 0) {
+        pixelNodes.forEach(node => {
+            switch (node.type) {
+                case 'pixel-noise':
+                    pixelPromptParts.push(`apply ${node.value}% pixel noise.`);
+                    break;
+                case 'pixel-brightness':
+                    pixelPromptParts.push(`adjust brightness by ${node.value}%.`);
+                    break;
+                case 'pixel-color':
+                    pixelPromptParts.push(`add a color tint of (${node.value.r}, ${node.value.g}, ${node.value.b}).`);
+                    break;
+            }
+        });
+    } else {
+        pixelPromptParts.push("no manipulations, return the original image.");
+    }
+    const pixelManipulationsImage = await generateImageWithPrompt(pixelPromptParts.join(' '), inputImage);
+
+    // Step 3: Generate Final Image
+    const generativeModelInputImage = pixelManipulationsImage; // The output of step 2 is the input for step 3
+    const finalPromptNodes = nodes.filter(n => ['text-prompt', 'setting-diffusion', 'setting-seed', 'meta-node'].includes(n.type));
+    
+    let finalPromptParts: string[] = [];
+    if (finalPromptNodes.length === 0) {
+        finalPromptParts.push("A stunningly beautiful mushroom, glowing with bioluminescence in a dark forest, cinematic, hyperrealistic.");
+    } else {
+        finalPromptNodes.forEach(node => {
+            switch(node.type) {
+                case 'text-prompt':
+                    if (node.value) finalPromptParts.push(`The main subject is: "${node.value}".`);
+                    break;
+                case 'setting-diffusion':
+                    finalPromptParts.push(`Use a diffusion strength of ${node.value}%.`);
+                    break;
+                case 'setting-seed':
+                    finalPromptParts.push(`Use a generation seed of ${node.value}.`);
+                    break;
+                 case 'meta-node':
+                    finalPromptParts.push(`This is part of a group called "${node.name}".`);
+                    break;
+            }
+        });
+    }
+    const finalImage = await generateImageWithPrompt(finalPromptParts.join(' '), generativeModelInputImage);
+
+    return {
+        inputImage,
+        pixelManipulationsImage,
+        generativeModelInputImage,
+        finalImage
+    };
   }
 );
