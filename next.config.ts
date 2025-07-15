@@ -2,8 +2,13 @@ import type {NextConfig} from 'next';
 
 const isProd = process.env.NODE_ENV === 'production';
 
+// The name of the repository. This is used to set the base path and asset prefix for GitHub Pages.
+const repoName = 'latent-sculptor';
+
 const nextConfig: NextConfig = {
+  // The output directory for the static export.
   output: 'export',
+  
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -21,10 +26,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  
   // Set the asset prefix and base path for GitHub Pages.
-  // The repository name is 'latent-sculptor'.
-  assetPrefix: isProd ? '/latent-sculptor/' : '',
-  basePath: isProd ? '/latent-sculptor' : '',
+  assetPrefix: isProd ? `/${repoName}/` : '',
+  basePath: isProd ? `/${repoName}` : '',
 };
 
 export default nextConfig;

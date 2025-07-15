@@ -53,10 +53,14 @@ export function LatentSculptorPage() {
   const [apiKey, setApiKey] = React.useState('');
   
   React.useEffect(() => {
-    const hasSeenTutorial = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!hasSeenTutorial) {
-      setIsWelcomeOpen(true);
-      localStorage.setItem(LOCAL_STORAGE_KEY, 'true');
+    try {
+      const hasSeenTutorial = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (!hasSeenTutorial) {
+        setIsWelcomeOpen(true);
+        localStorage.setItem(LOCAL_STORAGE_KEY, 'true');
+      }
+    } catch (error) {
+        console.warn("Could not access localStorage. Welcome dialog may reappear.", error);
     }
   }, []);
   
@@ -170,6 +174,8 @@ export function LatentSculptorPage() {
     
     try {
         let result;
+        // If an API key is provided, use the client-side generation.
+        // Otherwise, use the server-side Genkit flow.
         if (apiKey) {
             result = await clientSideGenerate(generationPayload, apiKey);
         } else {
@@ -183,6 +189,7 @@ export function LatentSculptorPage() {
             variant: 'destructive',
             title: 'Image Generation Failed',
             description: error instanceof Error ? error.message : 'An unknown error occurred.',
+            duration: 9000,
         });
     } finally {
         setIsGenerating(false);
