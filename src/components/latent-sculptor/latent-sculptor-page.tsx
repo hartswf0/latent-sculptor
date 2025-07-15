@@ -51,6 +51,14 @@ export function LatentSculptorPage() {
     window.addEventListener('mouseup', handleMouseUp);
     return () => window.removeEventListener('mouseup', handleMouseUp);
   }, []);
+  
+  const getInfluence = React.useCallback((y: number) => {
+    if (!canvasRef.current) return 0;
+    const canvasHeight = canvasRef.current.offsetHeight;
+    // Ensure influence is 100 at the top (y=0) and 0 at the bottom.
+    const influence = 100 - (y / canvasHeight) * 100;
+    return Math.max(0, Math.min(100, influence));
+  }, []);
 
   const handleMouseMove = React.useCallback((e: React.MouseEvent) => {
     if (draggingNode && canvasRef.current) {
@@ -189,7 +197,7 @@ export function LatentSculptorPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground" onMouseMove={handleMouseMove}>
-      <Header />
+      <Header nodes={nodes} getInfluence={getInfluence} />
       <Sidebar 
         nodes={nodes}
         addNode={addNode} 
@@ -212,6 +220,7 @@ export function LatentSculptorPage() {
                 onNodeValueChange={updateNodeValue}
                 onNodeSelect={handleNodeSelect}
                 canvasRef={canvasRef}
+                getInfluence={getInfluence}
             />
         </div>
       </main>

@@ -3,22 +3,16 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import {
-  TextCursorInput,
-  Waves,
-  Sun,
-  Palette,
-  Combine,
-  Hash,
-  BoxSelect,
-  Camera,
-  Sparkles,
   Loader2,
   RefreshCcw,
   ChevronsRight,
   ChevronLeft,
+  Sparkles,
+  BoxSelect
 } from 'lucide-react';
 import type { Node, NodeType } from './types';
 import { GuidanceTool } from './guidance-tool';
+import { NODE_TYPE_ICONS } from './node-config';
 
 interface SidebarProps {
   nodes: Node[];
@@ -34,13 +28,13 @@ interface SidebarProps {
 }
 
 const nodeTools = [
-  { type: 'text-prompt', name: 'Text Prompt', icon: TextCursorInput },
-  { type: 'camera-input', name: 'Camera Input', icon: Camera },
-  { type: 'pixel-noise', name: 'Noise', icon: Waves },
-  { type: 'pixel-brightness', name: 'Brightness', icon: Sun },
-  { type: 'pixel-color', name: 'Color', icon: Palette },
-  { type: 'setting-diffusion', name: 'Diffusion', icon: Combine },
-  { type: 'setting-seed', name: 'Seed', icon: Hash },
+  { type: 'text-prompt', name: 'Text Prompt' },
+  { type: 'camera-input', name: 'Camera Input' },
+  { type: 'pixel-noise', name: 'Noise' },
+  { type: 'pixel-brightness', name: 'Brightness' },
+  { type: 'pixel-color', name: 'Color' },
+  { type: 'setting-diffusion', name: 'Diffusion' },
+  { type: 'setting-seed', name: 'Seed' },
 ];
 
 const stepActions = [
@@ -69,7 +63,7 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
       <div className="p-4 border-b">
         <div className="flex gap-2">
             {generationStep > 0 && generationStep < 4 && (
-                 <Button onClick={onPreviousStep} disabled={isGenerating} variant="outline" size="icon" className="h-12 w-12">
+                 <Button onClick={onPreviousStep} disabled={isGenerating} variant="outline" size="icon" className="h-12 w-12 flex-shrink-0">
                     <ChevronLeft className="h-5 w-5" />
                 </Button>
             )}
@@ -88,17 +82,20 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
         <div className="p-4">
           <h3 className="font-semibold text-foreground mb-4">Add Nodes</h3>
           <div className="grid grid-cols-2 gap-2">
-            {nodeTools.map((tool) => (
-              <Button
-                key={tool.type}
-                variant="outline"
-                className="h-20 flex flex-col gap-2"
-                onClick={() => addNode(tool.type, tool.name)}
-              >
-                <tool.icon className="w-6 h-6 text-primary" />
-                <span className="text-xs">{tool.name}</span>
-              </Button>
-            ))}
+            {nodeTools.map((tool) => {
+                const ToolIcon = NODE_TYPE_ICONS[tool.type as NodeType]?.default;
+                return (
+                  <Button
+                    key={tool.type}
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2"
+                    onClick={() => addNode(tool.type as NodeType, tool.name)}
+                  >
+                    {ToolIcon && <ToolIcon className="w-6 h-6 text-primary" />}
+                    <span className="text-xs">{tool.name}</span>
+                  </Button>
+                )
+            })}
           </div>
         </div>
 
@@ -109,11 +106,12 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
             </Button>
             <p className="text-xs text-muted-foreground mt-2 text-center">Select 2 or more nodes to group them.</p>
         </div>
-
-        <Separator className="my-2" />
-
-        <GuidanceTool nodes={nodes} updateNodeValue={updateNodeValue} />
+        
       </ScrollArea>
+      <Separator />
+      <div className="flex-shrink-0">
+         <GuidanceTool nodes={nodes} updateNodeValue={updateNodeValue} />
+      </div>
     </aside>
   );
 }

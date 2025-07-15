@@ -1,6 +1,6 @@
 'use client';
 import React, { useRef, useEffect, useState } from 'react';
-import { X, GripVertical, Camera, Zap } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import type { Node } from './types';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { NODE_TYPE_COLORS, NODE_TYPE_ICONS } from './node-config';
 
 
 interface ParameterNodeProps {
@@ -27,6 +28,7 @@ const CameraInputNode = ({ onValueChange, nodeId, value }: { onValueChange: (nod
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const { toast } = useToast();
+    const { Zap, Camera } = NODE_TYPE_ICONS['camera-input'];
 
     useEffect(() => {
         const getCameraPermission = async () => {
@@ -165,6 +167,9 @@ export function ParameterNode({
     }
   };
 
+  const Icon = NODE_TYPE_ICONS[node.type]?.default || (() => null);
+  const color = NODE_TYPE_COLORS[node.type];
+
   return (
     <Card
       className={cn(
@@ -179,11 +184,12 @@ export function ParameterNode({
       }}
     >
       <CardHeader
-        className="p-3 flex-row items-center justify-between cursor-grab"
+        className="p-3 flex-row items-center justify-between cursor-grab relative"
         onMouseDown={(e) => onMouseDown(e, node.id)}
       >
-        <div className="flex items-center gap-2">
-            <GripVertical className="w-5 h-5 text-muted-foreground" />
+        <div className="absolute top-0 left-0 right-0 h-1 rounded-t-lg" style={{ backgroundColor: `hsl(${color})` }} />
+        <div className="flex items-center gap-2 pt-1">
+            <Icon className="w-5 h-5" style={{ color: `hsl(${color})` }} />
             <CardTitle className="text-base font-medium">{node.name}</CardTitle>
         </div>
         <Button variant="ghost" size="icon" className="w-6 h-6" onClick={() => onDelete(node.id)}>
@@ -194,8 +200,8 @@ export function ParameterNode({
           {renderNodeContent()}
       </CardContent>
       <div className="absolute -right-12 top-1/2 -translate-y-1/2 flex items-center gap-2">
-        <div className="w-10 border-t border-dashed border-accent"></div>
-        <div className="text-xs font-mono bg-accent text-accent-foreground rounded-full px-2 py-0.5">
+        <div className="w-10 border-t border-dashed" style={{ borderColor: `hsl(${color})` }}></div>
+        <div className="text-xs font-mono bg-accent text-accent-foreground rounded-full px-2 py-0.5" style={{ backgroundColor: `hsl(${color})`, color: 'hsl(var(--primary-foreground))' }}>
           {influence.toFixed(0)}%
         </div>
       </div>

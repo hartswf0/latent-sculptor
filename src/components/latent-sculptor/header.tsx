@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import type { Node } from './types';
+import { NODE_TYPE_COLORS, NODE_TYPE_ICONS } from './node-config';
 
 const LatentSculptorIcon = () => (
     <svg
@@ -29,12 +31,41 @@ const LatentSculptorIcon = () => (
     </svg>
   );
 
-export function Header() {
+const GenerationGenome = ({ nodes, getInfluence }: { nodes: Node[], getInfluence: (y: number) => number }) => {
+    const totalInfluence = nodes.reduce((sum, node) => sum + getInfluence(node.position.y), 0);
+    
+    if (totalInfluence === 0) {
+        return <div className="h-2 flex-1 rounded-full bg-muted"></div>;
+    }
+
+    return (
+        <div className="flex flex-1 h-2 rounded-full overflow-hidden bg-muted">
+            {nodes.map(node => {
+                const influence = getInfluence(node.position.y);
+                const width = (influence / totalInfluence) * 100;
+                const color = NODE_TYPE_COLORS[node.type];
+                return (
+                    <div 
+                        key={node.id} 
+                        style={{ width: `${width}%`, backgroundColor: `hsl(${color})` }}
+                        className="h-full transition-all duration-300"
+                        title={`${node.name}: ${influence.toFixed(0)}% influence`}
+                    />
+                )
+            })}
+        </div>
+    )
+}
+
+export function Header({ nodes, getInfluence }: { nodes: Node[], getInfluence: (y: number) => number }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex items-center h-16 px-6 bg-card/80 backdrop-blur-sm border-b border-border">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 w-72">
         <LatentSculptorIcon />
         <h1 className="text-xl font-semibold text-foreground">Latent Sculptor</h1>
+      </div>
+      <div className="flex-1 px-8 flex items-center gap-4">
+        <GenerationGenome nodes={nodes} getInfluence={getInfluence} />
       </div>
     </header>
   );

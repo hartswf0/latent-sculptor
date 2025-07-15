@@ -13,6 +13,7 @@ interface NodeCanvasProps {
   onNodeValueChange: (nodeId: string, value: any) => void;
   onNodeSelect: (e: React.MouseEvent, nodeId: string) => void;
   canvasRef: React.RefObject<HTMLDivElement>;
+  getInfluence: (y: number) => number;
 }
 
 export function NodeCanvas({
@@ -23,14 +24,8 @@ export function NodeCanvas({
   onNodeValueChange,
   onNodeSelect,
   canvasRef,
+  getInfluence,
 }: NodeCanvasProps) {
-
-  const getInfluence = (y: number) => {
-    if (!canvasRef.current) return 0;
-    const canvasHeight = canvasRef.current.offsetHeight;
-    const influence = 100 - (y / canvasHeight) * 100;
-    return Math.max(0, Math.min(100, influence));
-  };
   
   return (
     <div ref={canvasRef} className="w-full h-full relative overflow-hidden" onClick={(e) => {
