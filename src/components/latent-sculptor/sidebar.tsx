@@ -98,7 +98,13 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
               })}
             </div>
           </div>
+          
+          <Separator className="my-0" />
 
+          <GuidanceTool nodes={nodes} updateNodeValue={updateNodeValue} />
+          
+          <Separator className="my-0" />
+          
           <div className="p-4">
               <Button onClick={groupNodes} disabled={selectedNodeIds.length < 2} className="w-full">
                   <BoxSelect className="mr-2 h-4 w-4" />
@@ -107,9 +113,6 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
               <p className="text-xs text-muted-foreground mt-2 text-center">Select 2 or more nodes to group them.</p>
           </div>
       </ScrollArea>
-      <div className="flex-shrink-0 border-t">
-         <GuidanceTool nodes={nodes} updateNodeValue={updateNodeValue} />
-      </div>
     </aside>
   );
 }
