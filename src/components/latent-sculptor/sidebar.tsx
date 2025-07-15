@@ -79,7 +79,6 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="pb-[12rem]">
           <div className="p-4">
             <h3 className="font-semibold text-foreground mb-4">Add Nodes</h3>
             <div className="grid grid-cols-2 gap-2">
@@ -107,10 +106,8 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
               </Button>
               <p className="text-xs text-muted-foreground mt-2 text-center">Select 2 or more nodes to group them.</p>
           </div>
-        </div>
-        
       </ScrollArea>
-      <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 bg-card border-t">
+      <div className="flex-shrink-0 border-t">
          <GuidanceTool nodes={nodes} updateNodeValue={updateNodeValue} />
       </div>
     </aside>

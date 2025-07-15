@@ -136,22 +136,29 @@ export function ParameterNode({
           />
         );
        case 'pixel-color':
+        const { r, g, b } = node.value;
         return (
-          <div className="space-y-2">
-            {['r', 'g', 'b'].map((color) => (
-              <div key={color} className="space-y-1">
-                <Label className="text-xs uppercase">{color}</Label>
-                <div className="flex items-center gap-2">
-                   <Slider
-                    value={[node.value[color]]}
-                    onValueChange={([val]) => onValueChange(node.id, {...node.value, [color]: val})}
-                    max={255}
-                    step={1}
-                  />
-                  <span className="text-xs font-mono w-10 text-right">{node.value[color]}</span>
+          <div className="flex gap-4">
+            <div 
+                className="w-20 h-20 rounded-md flex-shrink-0 border"
+                style={{ backgroundColor: `rgb(${r}, ${g}, ${b})` }}
+            />
+            <div className="space-y-2 w-full">
+              {['r', 'g', 'b'].map((color) => (
+                <div key={color} className="space-y-1">
+                  <Label className="text-xs uppercase">{color}</Label>
+                  <div className="flex items-center gap-2">
+                     <Slider
+                      value={[node.value[color]]}
+                      onValueChange={([val]) => onValueChange(node.id, {...node.value, [color]: val})}
+                      max={255}
+                      step={1}
+                    />
+                    <span className="text-xs font-mono w-10 text-right">{node.value[color]}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         );
       case 'meta-node':
@@ -176,7 +183,7 @@ export function ParameterNode({
   return (
     <Card
       className={cn(
-        'absolute shadow-xl w-72 bg-card/80 backdrop-blur-sm transition-all duration-100',
+        'absolute shadow-xl bg-card/80 backdrop-blur-sm transition-all duration-100',
         isSelected ? 'ring-2 ring-accent ring-offset-2 ring-offset-background' : 'ring-1 ring-border',
       )}
       style={{
@@ -204,7 +211,7 @@ export function ParameterNode({
       </CardContent>
        {showInfluence && (
          <div className="absolute -right-12 top-1/2 -translate-y-1/2 flex items-center gap-2">
-            <div className="w-10 border-t border-dashed" style={{ borderColor: `hsl(${color})` }}></div>
+            <div className="w-10 border-t-2 border-dashed" style={{ borderColor: `hsl(${color})` }}></div>
             <div className="text-xs font-mono bg-accent text-accent-foreground rounded-full px-2 py-0.5" style={{ backgroundColor: `hsl(${color})`, color: 'hsl(var(--primary-foreground))' }}>
               {influence.toFixed(0)}%
             </div>
