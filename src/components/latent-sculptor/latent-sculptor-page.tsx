@@ -6,6 +6,7 @@ import { NodeCanvas } from './node-canvas';
 import { PipelineVisualizer } from './pipeline-visualizer';
 import type { Node, NodeType } from './types';
 import { nanoid } from 'nanoid';
+import { generateImage, ImageGenerationOutput } from '@/ai/flows/image-generation-flow';
 
 const initialNodes: Node[] = [
   {
@@ -39,6 +40,8 @@ export function LatentSculptorPage() {
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [draggingNode, setDraggingNode] = useState<{ id: string; offset: { x: number; y: number } } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const [pipelineState, setPipelineState] = useState<ImageGenerationOutput | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   useEffect(() => {
     const handleMouseUp = () => setDraggingNode(null);
@@ -99,8 +102,8 @@ export function LatentSculptorPage() {
       type,
       name: `${name} ${nodes.filter(n => n.type === type).length + 1}`,
       position: { x: Math.random() * 400 + 50, y: Math.random() * 400 + 50 },
-      value: type === 'text-prompt' ? '' : (type === 'pixel-color' ? {r: 128, g: 128, b: 128} : 50),
-      width: type === 'text-prompt' ? 300 : 280,
+      value: type === 'text-prompt' ? '' : (type === 'pixel-color' ? {r: 128, g: 128, b: 128} : (type === 'camera-input' ? null : 50)),
+      width: type === 'text-prompt' || type === 'camera-input' ? 300 : 280,
     };
     setNodes(prev => [...prev, newNode]);
   }, [nodes]);
@@ -136,6 +139,19 @@ export function LatentSculptorPage() {
     setSelectedNodeIds([metaNode.id]);
   }, [selectedNodeIds, nodes]);
 
+  const handleGenerate = useCallback(async () => {
+    setIsGenerating(true);
+    setPipelineState(null);
+    try {
+      const result = await generateImage({ nodes });
+      setPipelineState(result);
+    } catch (error) {
+      console.error("Failed to generate image:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [nodes]);
+
   return (
     <div className="min-h-screen bg-background text-foreground" onMouseMove={handleMouseMove}>
       <Header />
@@ -145,6 +161,8 @@ export function LatentSculptorPage() {
         groupNodes={groupNodes}
         selectedNodeIds={selectedNodeIds}
         updateNodeValue={updateNodeValue}
+        onGenerate={handleGenerate}
+        isGenerating={isGenerating}
       />
       <main className="pt-16 pl-72 pb-44">
         <div className="h-[calc(100vh-16rem)] w-full">
@@ -159,7 +177,8 @@ export function LatentSculptorPage() {
             />
         </div>
       </main>
-      <PipelineVisualizer />
+      <PipelineVisualizer pipelineState={pipelineState} />
     </div>
   );
 }
+

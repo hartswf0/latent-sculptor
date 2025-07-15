@@ -1,5 +1,6 @@
 'use client';
-import { X, GripVertical } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { X, GripVertical, Camera, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,6 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import type { Node } from './types';
+import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 interface ParameterNodeProps {
   node: Node;
@@ -16,6 +20,70 @@ interface ParameterNodeProps {
   onValueChange: (nodeId: string, value: any) => void;
   isSelected: boolean;
   influence: number;
+}
+
+const CameraInputNode = ({ onValueChange, nodeId, value }: { onValueChange: (nodeId: string, value: any) => void, nodeId: string, value: string | null }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        const getCameraPermission = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
+                setHasCameraPermission(true);
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                setHasCameraPermission(false);
+                toast({
+                    variant: 'destructive',
+                    title: 'Camera Access Denied',
+                    description: 'Please enable camera permissions in your browser settings.',
+                });
+            }
+        };
+        getCameraPermission();
+    }, [toast]);
+    
+    const captureFrame = () => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            if (context) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/png');
+                onValueChange(nodeId, dataUrl);
+            }
+        }
+    }
+
+    return (
+        <div className="space-y-2">
+            <div className="relative aspect-video rounded-md overflow-hidden bg-muted">
+                <video ref={videoRef} className={cn("w-full h-full", value ? 'opacity-20' : 'opacity-100')} autoPlay muted playsInline />
+                {value && <img src={value} alt="Captured frame" className="absolute inset-0 w-full h-full object-cover" />}
+            </div>
+            {hasCameraPermission === false && (
+                <Alert variant="destructive">
+                    <Camera className="h-4 w-4" />
+                    <AlertTitle>No Camera</AlertTitle>
+                    <AlertDescription>Camera access is required.</AlertDescription>
+                </Alert>
+            )}
+            <Button onClick={captureFrame} disabled={!hasCameraPermission} className="w-full">
+                <Zap className="mr-2 h-4 w-4" />
+                {value ? 'Recapture Frame' : 'Capture Frame'}
+            </Button>
+            <canvas ref={canvasRef} className="hidden" />
+        </div>
+    )
 }
 
 export function ParameterNode({
@@ -28,6 +96,8 @@ export function ParameterNode({
 }: ParameterNodeProps) {
   const renderNodeContent = () => {
     switch (node.type) {
+      case 'camera-input':
+          return <CameraInputNode onValueChange={onValueChange} nodeId={node.id} value={node.value} />;
       case 'text-prompt':
         return (
           <Textarea
@@ -132,3 +202,4 @@ export function ParameterNode({
     </Card>
   );
 }
+

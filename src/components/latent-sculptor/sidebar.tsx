@@ -10,6 +10,9 @@ import {
   Combine,
   Hash,
   BoxSelect,
+  Camera,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 import type { Node, NodeType } from './types';
 import { GuidanceTool } from './guidance-tool';
@@ -20,10 +23,13 @@ interface SidebarProps {
   groupNodes: () => void;
   selectedNodeIds: string[];
   updateNodeValue: (nodeId: string, value: any) => void;
+  onGenerate: () => void;
+  isGenerating: boolean;
 }
 
 const nodeTools = [
   { type: 'text-prompt', name: 'Text Prompt', icon: TextCursorInput },
+  { type: 'camera-input', name: 'Camera Input', icon: Camera },
   { type: 'pixel-noise', name: 'Noise', icon: Waves },
   { type: 'pixel-brightness', name: 'Brightness', icon: Sun },
   { type: 'pixel-color', name: 'Color', icon: Palette },
@@ -31,9 +37,20 @@ const nodeTools = [
   { type: 'setting-seed', name: 'Seed', icon: Hash },
 ];
 
-export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNodeValue }: SidebarProps) {
+export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNodeValue, onGenerate, isGenerating }: SidebarProps) {
   return (
     <aside className="fixed top-16 left-0 w-72 h-[calc(100vh-4rem)] bg-card border-r border-border z-40 flex flex-col">
+      <div className="p-4 border-b">
+        <Button onClick={onGenerate} disabled={isGenerating} className="w-full h-12 text-lg">
+            {isGenerating ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+                <Sparkles className="mr-2 h-5 w-5" />
+            )}
+            Generate Image
+        </Button>
+      </div>
+
       <ScrollArea className="flex-1">
         <div className="p-4">
           <h3 className="font-semibold text-foreground mb-4">Add Nodes</h3>
@@ -67,3 +84,4 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
     </aside>
   );
 }
+

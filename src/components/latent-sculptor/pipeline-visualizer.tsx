@@ -4,16 +4,17 @@ import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import type { ImageGenerationOutput } from '@/ai/flows/image-generation-flow';
 
 const AnimatedChevron = ({ className }: { className?: string }) => (
     <ChevronRight className={cn("text-muted-foreground/50 animate-pulse-slow", className)} size={24} />
 );
 
-const PipelineStage = ({ title, imageUrl, hint, isFinal = false }: { title: string, imageUrl: string, hint: string, isFinal?: boolean }) => (
+const PipelineStage = ({ title, imageUrl, hint, isFinal = false, isLoading = false }: { title: string, imageUrl: string, hint: string, isFinal?: boolean, isLoading?: boolean }) => (
     <div className="flex flex-col items-center gap-2 flex-shrink-0">
         <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
         <Card className={cn("w-32 h-20 md:w-48 md:h-32 overflow-hidden", isFinal && "border-accent shadow-lg shadow-accent/20")}>
-            <CardContent className="p-0">
+            <CardContent className="p-0 relative">
                 <Image
                     src={imageUrl}
                     alt={title}
@@ -22,17 +23,22 @@ const PipelineStage = ({ title, imageUrl, hint, isFinal = false }: { title: stri
                     className="object-cover w-full h-full"
                     data-ai-hint={hint}
                 />
+                {isLoading && (
+                     <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+                        <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+                    </div>
+                )}
             </CardContent>
         </Card>
     </div>
 );
 
-export function PipelineVisualizer() {
+export function PipelineVisualizer({ pipelineState }: { pipelineState: ImageGenerationOutput | null }) {
     const stages = [
         { title: 'Input Image', imageUrl: 'https://placehold.co/192x128.png', hint: 'abstract pattern' },
         { title: 'Pixel Manipulations', imageUrl: 'https://placehold.co/192x128.png', hint: 'glitch art' },
         { title: 'Generative Model Input', imageUrl: 'https://placehold.co/192x128.png', hint: 'noisy image' },
-        { title: 'Final Output', imageUrl: 'https://placehold.co/192x128.png', hint: 'futuristic city', isFinal: true },
+        { title: 'Final Output', imageUrl: pipelineState?.finalImage || 'https://placehold.co/192x128.png', hint: 'futuristic city', isFinal: true },
     ];
 
     return (
@@ -40,7 +46,7 @@ export function PipelineVisualizer() {
             <div className="flex items-center justify-center p-4 space-x-2 md:space-x-4 overflow-x-auto">
                 {stages.map((stage, index) => (
                     <React.Fragment key={stage.title}>
-                        <PipelineStage {...stage} />
+                        <PipelineStage {...stage} isLoading={!pipelineState?.finalImage && stage.isFinal} />
                         {index < stages.length - 1 && (
                             <div className="flex-shrink-0">
                                 <AnimatedChevron />
@@ -61,3 +67,4 @@ export function PipelineVisualizer() {
         </footer>
     );
 }
+
