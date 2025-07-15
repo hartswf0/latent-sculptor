@@ -11,7 +11,6 @@ import {
   BoxSelect
 } from 'lucide-react';
 import type { Node, NodeType } from './types';
-import { GuidanceTool } from './guidance-tool';
 import { NODE_TYPE_ICONS } from './node-config';
 
 interface SidebarProps {
@@ -19,7 +18,6 @@ interface SidebarProps {
   addNode: (type: NodeType, name: string) => void;
   groupNodes: () => void;
   selectedNodeIds: string[];
-  updateNodeValue: (nodeId: string, value: any) => void;
   onNextStep: () => void;
   onPreviousStep: () => void;
   onReset: () => void;
@@ -45,7 +43,7 @@ const stepActions = [
 ];
 
 
-export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNodeValue, onNextStep, onPreviousStep, onReset, isGenerating, generationStep }: SidebarProps) {
+export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, onNextStep, onPreviousStep, onReset, isGenerating, generationStep }: SidebarProps) {
   
   const handleActionClick = () => {
     if (generationStep < 3) {
@@ -98,10 +96,6 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
               })}
             </div>
           </div>
-          
-          <Separator className="my-0" />
-
-          <GuidanceTool nodes={nodes} updateNodeValue={updateNodeValue} />
           
           <Separator className="my-0" />
           

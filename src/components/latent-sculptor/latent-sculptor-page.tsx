@@ -203,7 +203,6 @@ export function LatentSculptorPage() {
         addNode={addNode} 
         groupNodes={groupNodes}
         selectedNodeIds={selectedNodeIds}
-        updateNodeValue={updateNodeValue}
         onNextStep={handleNextStep}
         onPreviousStep={handlePreviousStep}
         onReset={handleReset}
