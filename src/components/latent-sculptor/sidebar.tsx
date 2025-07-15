@@ -79,37 +79,38 @@ export function Sidebar({ nodes, addNode, groupNodes, selectedNodeIds, updateNod
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="p-4">
-          <h3 className="font-semibold text-foreground mb-4">Add Nodes</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {nodeTools.map((tool) => {
-                const ToolIcon = NODE_TYPE_ICONS[tool.type as NodeType]?.default;
-                return (
-                  <Button
-                    key={tool.type}
-                    variant="outline"
-                    className="h-20 flex flex-col gap-2"
-                    onClick={() => addNode(tool.type as NodeType, tool.name)}
-                  >
-                    {ToolIcon && <ToolIcon className="w-6 h-6 text-primary" />}
-                    <span className="text-xs">{tool.name}</span>
-                  </Button>
-                )
-            })}
+        <div className="pb-[12rem]">
+          <div className="p-4">
+            <h3 className="font-semibold text-foreground mb-4">Add Nodes</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {nodeTools.map((tool) => {
+                  const ToolIcon = NODE_TYPE_ICONS[tool.type as NodeType]?.default;
+                  return (
+                    <Button
+                      key={tool.type}
+                      variant="outline"
+                      className="h-20 flex flex-col gap-2"
+                      onClick={() => addNode(tool.type as NodeType, tool.name)}
+                    >
+                      {ToolIcon && <ToolIcon className="w-6 h-6 text-primary" />}
+                      <span className="text-xs">{tool.name}</span>
+                    </Button>
+                  )
+              })}
+            </div>
           </div>
-        </div>
 
-        <div className="p-4">
-            <Button onClick={groupNodes} disabled={selectedNodeIds.length < 2} className="w-full">
-                <BoxSelect className="mr-2 h-4 w-4" />
-                Group Selected ({selectedNodeIds.length})
-            </Button>
-            <p className="text-xs text-muted-foreground mt-2 text-center">Select 2 or more nodes to group them.</p>
+          <div className="p-4">
+              <Button onClick={groupNodes} disabled={selectedNodeIds.length < 2} className="w-full">
+                  <BoxSelect className="mr-2 h-4 w-4" />
+                  Group Selected ({selectedNodeIds.length})
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2 text-center">Select 2 or more nodes to group them.</p>
+          </div>
         </div>
         
       </ScrollArea>
-      <Separator />
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 bg-card border-t">
          <GuidanceTool nodes={nodes} updateNodeValue={updateNodeValue} />
       </div>
     </aside>

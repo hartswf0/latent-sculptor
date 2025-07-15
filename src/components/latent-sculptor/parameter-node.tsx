@@ -96,6 +96,9 @@ export function ParameterNode({
   isSelected,
   influence,
 }: ParameterNodeProps) {
+  
+  const showInfluence = !['pixel-noise', 'pixel-brightness', 'pixel-color', 'setting-diffusion'].includes(node.type);
+
   const renderNodeContent = () => {
     switch (node.type) {
       case 'camera-input':
@@ -199,12 +202,14 @@ export function ParameterNode({
       <CardContent className="p-3 pt-0">
           {renderNodeContent()}
       </CardContent>
-      <div className="absolute -right-12 top-1/2 -translate-y-1/2 flex items-center gap-2">
-        <div className="w-10 border-t border-dashed" style={{ borderColor: `hsl(${color})` }}></div>
-        <div className="text-xs font-mono bg-accent text-accent-foreground rounded-full px-2 py-0.5" style={{ backgroundColor: `hsl(${color})`, color: 'hsl(var(--primary-foreground))' }}>
-          {influence.toFixed(0)}%
-        </div>
-      </div>
+       {showInfluence && (
+         <div className="absolute -right-12 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <div className="w-10 border-t border-dashed" style={{ borderColor: `hsl(${color})` }}></div>
+            <div className="text-xs font-mono bg-accent text-accent-foreground rounded-full px-2 py-0.5" style={{ backgroundColor: `hsl(${color})`, color: 'hsl(var(--primary-foreground))' }}>
+              {influence.toFixed(0)}%
+            </div>
+         </div>
+       )}
     </Card>
   );
 }
